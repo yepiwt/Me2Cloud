@@ -22,6 +22,7 @@ class DrivenCore:
 		self.user_hash_id = None
 		self.path = local_dir_path
 		self.current_version = current_version_in_unix
+		self.containers = []
 
 	def archive_local_directory(self):
 		with zipfile.ZipFile('decrypted.zip', 'w', zipfile.ZIP_DEFLATED) as ziph:
@@ -67,13 +68,31 @@ class DrivenCore:
 				tags = f"user{self.user_hash_id}",
 		)
 
+	async def get_all_containers(self):
+		
+		if not self.user_hash_id:
+			await self.hash_user_id()
+
+		vk_api_answer = await self.vk_api.docs.search(
+			q = f"user{self.user_hash_id}",
+			search_own = 1,
+		)
+
+		for item in vk_api_answer.response.items:
+			container = {
+				'version_in_unix': item.date,
+				'url': item.url,
+			}
+			self.containers.append(container)
+
 async def main():
 	vk_token = ""
 	local_dir_path = "C:\\Users\\Nikita\\Driven\\Local"
 	vers = 1626472896
 
 	dc = DrivenCore(vk_token, local_dir_path, vers)
-	await dc.upload_doc()
+	#await dc.upload_doc()
+	#await dc.get_all_containers()
 
 if __name__ == '__main__':
 	asyncio.run(main())
