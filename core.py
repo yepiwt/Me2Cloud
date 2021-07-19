@@ -14,12 +14,13 @@ import os
 import hashlib
 import zipfile, shutil
 
+CONTAINER_TAG = "DrivenTAG" 
+
 class DrivenCore:
 
 	def __init__(self, vk_api_token: str, local_dir_path: str, current_version_in_unix: int):
 		api_session = API(tokens = vk_api_token, clients=AIOHTTPClient())
 		self.vk_api = api_session.get_context()
-		self.user_hash_id = None
 		self.path = local_dir_path
 		self.current_version = current_version_in_unix
 		self.containers = []
@@ -36,18 +37,7 @@ class DrivenCore:
 		with zipfile.ZipFile('decrypted.zip', 'r') as file:
 			file.extractall(path_to_uzip)
 
-	async def hash_user_id(self):
-		vk_api_answer = await self.vk_api.docs.get(count = 1)
-		try:
-			vk_user_id = vk_api_answer.response.items[0].owner_id
-			self.user_hash_id = hashlib.sha256(str(vk_user_id).encode('utf-8')).hexdigest()
-		except:
-			raise 'Добавьте хоть один файл в Вконтакте'
-
 	async def upload_conatiner_to_user_docs(self):
-
-		if not self.user_hash_id:
-			await self.hash_user_id()
 
 		vk_api_answer = await self.vk_api.docs.get_upload_server()
 		url_for_upload = vk_api_answer.response.upload_url
@@ -65,15 +55,12 @@ class DrivenCore:
 		await self.vk_api.docs.save(
 				file = file_obj,
 				title = "Контейнер Driven",
-				tags = f"user{self.user_hash_id}",
+				tags = CONTAINER_TAG,
 		)
 
 	async def get_all_containers(self):
-		
-		if not self.user_hash_id:
-			await self.hash_user_id()
 
-		items = await self.search_by_tag(f"user{self.user_hash_id}")
+		items = await self.search_by_tag(CONTAINER_TAG)
 
 		for item in items:
 			container = {
