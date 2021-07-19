@@ -73,12 +73,9 @@ class DrivenCore:
 		if not self.user_hash_id:
 			await self.hash_user_id()
 
-		vk_api_answer = await self.vk_api.docs.search(
-			q = f"user{self.user_hash_id}",
-			search_own = 1,
-		)
+		items = await self.search_by_tag(f"user{self.user_hash_id}")
 
-		for item in vk_api_answer.response.items:
+		for item in items:
 			container = {
 				'version_in_unix': item.date,
 				'url': item.url,
@@ -109,5 +106,6 @@ async def main():
 	vers = 1626472896
 
 	dc = DrivenCore(vk_token, local_dir_path, vers)
+
 if __name__ == '__main__':
 	asyncio.run(main())
