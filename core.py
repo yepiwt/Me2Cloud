@@ -44,7 +44,7 @@ class DrivenCore:
 		except:
 			raise 'Добавьте хоть один файл в Вконтакте'
 
-	async def upload_doc(self):
+	async def upload_conatiner_to_user_docs(self):
 
 		if not self.user_hash_id:
 			await self.hash_user_id()
@@ -85,17 +85,29 @@ class DrivenCore:
 			}
 			self.containers.append(container)
 
+	async def search_by_tag(self, tag: str):
+
+		"""
+			Я не знаю почему этого метода нет в ВКонтакте API
+		"""
+
+		vk_api_answer = await self.vk_api.docs.get(
+			return_tags =1
+		)
+
+		result = []
+		
+		for item in vk_api_answer.response.items:
+			if tag in item.tags:
+				result.append(item)
+
+		return result
+
 async def main():
 	vk_token = ""
 	local_dir_path = "C:\\Users\\Nikita\\Driven\\Local"
 	vers = 1626472896
 
 	dc = DrivenCore(vk_token, local_dir_path, vers)
-	#await dc.upload_doc()
-	#await dc.get_all_containers()
-
 if __name__ == '__main__':
 	asyncio.run(main())
-	#dc.archive_local_directory()
-	#shutil.rmtree(dc.path)
-	#dc.unzip_local_directory()
